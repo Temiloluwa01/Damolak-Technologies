@@ -142,10 +142,18 @@ jobs:
               sudo usermod -aG docker $USER || true
             fi
 
-            echo "Cleaning up old Docker socket and restarting daemon..."
-            sudo rm -f /var/run/docker.sock || true
+            echo "Restarting Docker daemon and waiting for initialization..."
             sudo systemctl restart docker
-            sleep 5
+            
+            # Wait for Docker daemon to be fully ready
+            for i in {1..30}; do
+              if sudo docker ps >/dev/null 2>&1; then
+                echo "Docker daemon is ready"
+                break
+              fi
+              echo "Waiting for Docker daemon... ($i/30)"
+              sleep 1
+            done
 
             if ! sudo docker compose version >/dev/null 2>&1; then
               echo "Docker Compose plugin not found. Installing Compose plugin..."
