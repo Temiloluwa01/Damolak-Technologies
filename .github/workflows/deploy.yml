@@ -42,29 +42,43 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Test DockerHub Connectivity
+        run: |
+          echo "Testing DockerHub connectivity..."
+          timeout 30 docker pull hello-world:latest || echo "Pull test failed, but continuing..."
+          docker rmi hello-world:latest 2>/dev/null || true
+
       - name: Build Backend Docker Image
         run: |
           docker build \
+            --compress \
+            --no-cache \
             -t ${{ secrets.DOCKER_USERNAME }}/backend:${{ steps.meta.outputs.tag }} \
             -t ${{ secrets.DOCKER_USERNAME }}/backend:latest \
             ./backend
 
       - name: Push Backend Docker Image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/backend:${{ steps.meta.outputs.tag }}
-          docker push ${{ secrets.DOCKER_USERNAME }}/backend:latest
+          echo "Pushing backend:${{ steps.meta.outputs.tag }}"
+          docker push ${{ secrets.DOCKER_USERNAME }}/backend:${{ steps.meta.outputs.tag }} || docker push ${{ secrets.DOCKER_USERNAME }}/backend:${{ steps.meta.outputs.tag }}
+          echo "Pushing backend:latest"
+          docker push ${{ secrets.DOCKER_USERNAME }}/backend:latest || docker push ${{ secrets.DOCKER_USERNAME }}/backend:latest
 
       - name: Build Frontend Docker Image
         run: |
           docker build \
+            --compress \
+            --no-cache \
             -t ${{ secrets.DOCKER_USERNAME }}/frontend:${{ steps.meta.outputs.tag }} \
             -t ${{ secrets.DOCKER_USERNAME }}/frontend:latest \
             ./frontend
 
       - name: Push Frontend Docker Image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/frontend:${{ steps.meta.outputs.tag }}
-          docker push ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+          echo "Pushing frontend:${{ steps.meta.outputs.tag }}"
+          docker push ${{ secrets.DOCKER_USERNAME }}/frontend:${{ steps.meta.outputs.tag }} || docker push ${{ secrets.DOCKER_USERNAME }}/frontend:${{ steps.meta.outputs.tag }}
+          echo "Pushing frontend:latest"
+          docker push ${{ secrets.DOCKER_USERNAME }}/frontend:latest || docker push ${{ secrets.DOCKER_USERNAME }}/frontend:latest
 
   deploy:
     name: Deploy to EC2
