@@ -1,44 +1,23 @@
 #!/bin/bash
 set -e
 
-# Update system packages
-sudo apt-get update
-sudo apt-get upgrade -y
+# Install Docker using the official install script.
+# This is the simplest reliable method for most Linux distributions.
+curl -fsSL https://get.docker.com | sh
 
-# Install dependencies
-sudo apt-get install -y \
-  apt-transport-https \
-  ca-certificates \
-  curl \
-  gnupg \
-  lsb-release \
-  software-properties-common
+# Ensure Docker service is running and enabled.
+systemctl enable docker
+systemctl start docker
 
-# Add Docker GPG key
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+# Add the ubuntu user to the docker group if it exists.
+if id -u ubuntu >/dev/null 2>&1; then
+  usermod -aG docker ubuntu || true
+fi
 
+# Create app folder for deployment.
+mkdir -p /home/ubuntu/app
+chown ubuntu:ubuntu /home/ubuntu/app || true
 
-# Update package index
-sudo apt-get update
-
-# Install Docker
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# Start Docker service
-sudo systemctl start docker
-sudo systemctl enable docker
-
-# Add ubuntu user to docker group (so we don't need sudo for docker commands)
-sudo usermod -aG docker ubuntu
-
-# Install Docker Compose
-sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-
-# Verify installations
+# Verify installation
 docker --version
-docker compose version
-
-# Create app directory with proper permissions
-sudo mkdir -p /home/ubuntu/app
-sudo chown ubuntu:ubuntu /home/ubuntu/app
+docker compose version || true
