@@ -12,3 +12,13 @@ output "ec2_public_dns" {
   value       = module.ec2.public_dns
   description = "Public DNS for EC2 deployment"
 }
+output "ec2_private_key_pem" {
+  value       = module.ec2.private_key_pem
+  sensitive   = true
+  description = "Private key for EC2 SSH access"
+}
+
+output "ec2_key_pair_name" {
+  value       = module.ec2.key_pair_name
+  description = "Name of the SSH key pair"
+}
