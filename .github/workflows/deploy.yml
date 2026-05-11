@@ -1,0 +1,67 @@
+name: Deploy MERN App to EC2
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+
+    - name: Deploy infrastructure
+      run: |
+        cd Infrastructure2/Caller
+        terraform init
+        terraform plan -out=tfplan
+        terraform apply -auto-approve tfplan
+
+    - name: Get EC2 instance IP
+      id: ec2-ip
+      run: |
+        INSTANCE_ID=$(cd Infrastructure2/Caller && terraform output -raw ec2_instance_id)
+        PUBLIC_IP=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
+        echo "public_ip=$PUBLIC_IP" >> $GITHUB_OUTPUT
+
+    - name: Deploy application via SSH
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ steps.ec2-ip.outputs.public_ip }}
+        username: ec2-user  # or ubuntu for Ubuntu AMIs
+        key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+        script: |
+          # Update system
+          sudo yum update -y  # or sudo apt update -y for Ubuntu
+
+          # Install Docker
+          sudo yum install -y docker  # or sudo apt install -y docker.io for Ubuntu
+          sudo systemctl start docker
+          sudo systemctl enable docker
+          sudo usermod -aG docker $USER
+
+          # Install Docker Compose
+          sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+
+          # Clone or copy application code
+          git clone https://github.com/your-username/your-repo.git /home/ec2-user/app || true
+          cd /home/ec2-user/app
+
+          # Build and run containers
+          docker-compose up -d --build
+
+    - name: Verify deployment
+      run: |
+        curl -f http://${{ steps.ec2-ip.outputs.public_ip }} || echo "Frontend not responding"
+        curl -f http://${{ steps.ec2-ip.outputs.public_ip }}:5000 || echo "Backend not responding"
