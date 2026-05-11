@@ -1,32 +1,31 @@
+version: '3.8'
+
 services:
-  
   mongo:
     image: mongo:6
-    container_name: mongo
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - '27017:27017'
     volumes:
-      - mongo-data:/data/db 
+      - mongo-data:/data/db
 
   backend:
-    build: ./backend
-    container_name: backend1
+    image: ${DOCKER_USERNAME}/backend:latest
+    restart: unless-stopped
     ports:
-      - "8080:5000"
-    #environment:
-     # - MONGO_URI=mongodb://mongo:27017/mern_db 
-     # - PORT=5000
-    env_file:
-      - ./backend/.env
+      - '8080:5000'
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/mern_db
+      - PORT=5000
+      - NODE_ENV=production
     depends_on:
       - mongo
 
   frontend:
-    build: ./frontend
-    container_name: frontend
+    image: ${DOCKER_USERNAME}/frontend:latest
+    restart: unless-stopped
     ports:
-      - "80:80"
+      - '80:80'
     depends_on:
       - backend
 
