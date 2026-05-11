@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'Infrastructure/**'
-      - '.github/workflows/infra.yml'
   workflow_dispatch:
 
 jobs:
@@ -46,3 +43,18 @@ jobs:
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
+      - name: Extract Terraform Outputs
+        id: tf-outputs
+        run: |
+          EC2_HOST=$(terraform output -raw ec2_public_ip)
+          echo "ec2_host=$EC2_HOST" >> $GITHUB_OUTPUT
+          echo "✅ EC2 Host: $EC2_HOST"
+
+      - name: Set GitHub Secrets from Terraform
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh secret set EC2_HOST --body "${{ steps.tf-outputs.outputs.ec2_host }}" -R $REPO
+          gh secret set EC2_USER --body "ubuntu" -R $REPO
+          echo "✅ GitHub secrets updated automatically from Terraform outputs"
