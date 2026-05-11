@@ -138,9 +138,14 @@ jobs:
               echo "Docker not found on remote host. Installing Docker and Compose plugin..."
               sudo apt-get update -y
               sudo apt-get install -y docker.io curl
-              sudo systemctl enable --now docker
+              sudo systemctl enable docker
               sudo usermod -aG docker $USER || true
             fi
+
+            echo "Cleaning up old Docker socket and restarting daemon..."
+            sudo rm -f /var/run/docker.sock || true
+            sudo systemctl restart docker
+            sleep 5
 
             if ! sudo docker compose version >/dev/null 2>&1; then
               echo "Docker Compose plugin not found. Installing Compose plugin..."
