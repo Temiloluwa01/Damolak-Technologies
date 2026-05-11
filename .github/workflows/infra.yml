@@ -48,13 +48,19 @@ jobs:
         run: |
           EC2_HOST=$(terraform output -raw ec2_public_ip)
           echo "ec2_host=$EC2_HOST" >> $GITHUB_OUTPUT
-          echo "✅ EC2 Host: $EC2_HOST"
+          echo "EC2 Host: $EC2_HOST"
 
       - name: Set GitHub Secrets from Terraform
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GH_PAT_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
-          gh secret set EC2_HOST --body "${{ steps.tf-outputs.outputs.ec2_host }}" -R $REPO
-          gh secret set EC2_USER --body "ubuntu" -R $REPO
-          echo "✅ GitHub secrets updated automatically from Terraform outputs"
+          if [ -z "$GH_TOKEN" ]; then
+            echo " GH_PAT_TOKEN not configured. Skipping secret updates."
+            echo "EC2_HOST: ${{ steps.tf-outputs.outputs.ec2_host }}"
+            echo "To automate: Create a Personal Access Token and add as GH_PAT_TOKEN secret"
+          else
+            gh secret set EC2_HOST --body "${{ steps.tf-outputs.outputs.ec2_host }}" -R $REPO
+            gh secret set EC2_USER --body "ubuntu" -R $REPO
+            echo "GitHub secrets updated automatically from Terraform outputs"
+          fi
