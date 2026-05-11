@@ -137,9 +137,16 @@ jobs:
             if ! command -v docker >/dev/null 2>&1; then
               echo "Docker not found on remote host. Installing Docker and Compose plugin..."
               sudo apt-get update -y
-              sudo apt-get install -y docker.io docker-compose-plugin
+              sudo apt-get install -y docker.io curl
               sudo systemctl enable --now docker
               sudo usermod -aG docker $USER || true
+            fi
+
+            if ! docker compose version >/dev/null 2>&1; then
+              echo "Docker Compose plugin not found. Installing Compose plugin..."
+              sudo mkdir -p /usr/lib/docker/cli-plugins
+              sudo curl -SL "https://github.com/docker/compose/releases/download/v2.23.0/docker-compose-linux-x86_64" -o /usr/lib/docker/cli-plugins/docker-compose
+              sudo chmod +x /usr/lib/docker/cli-plugins/docker-compose
             fi
 
             echo "Docker version: $(docker --version)"
