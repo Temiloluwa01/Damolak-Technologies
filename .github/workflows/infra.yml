@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - '../../Infrastructure/Caller/**'
+      - 'Infrastructure/Caller/**'
   workflow_dispatch:
 
 jobs:
@@ -15,7 +15,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: ../../Infrastructure/Caller
+        working-directory: Infrastructure/Caller
 
     steps:
       - name: Checkout Repository
