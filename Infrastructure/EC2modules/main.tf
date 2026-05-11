@@ -8,6 +8,8 @@ resource "aws_instance" "ec2" {
 
   vpc_security_group_ids = var.security_group_ids
 
+  user_data = base64encode(templatefile("${path.module}/user_data.sh", {}))
+
   tags = merge(
     {
       Name = var.config.ec2[0].name
