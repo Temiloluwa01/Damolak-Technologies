@@ -5,7 +5,8 @@ on:
     branches:
       - main
     paths:
-      - 'Infrastructure/Caller/**'
+      - 'Infrastructure/**'
+      - '.github/workflows/infra.yml'
   workflow_dispatch:
 
 jobs:
