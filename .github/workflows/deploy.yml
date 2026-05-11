@@ -142,21 +142,36 @@ jobs:
               sudo usermod -aG docker $USER || true
             fi
 
-            echo "Restarting Docker daemon and waiting for full initialization..."
-            sudo systemctl restart docker
-            
-            # Wait for Docker daemon to be fully ready - more robust check
-            for i in {1..60}; do
-              if sudo docker ps >/dev/null 2>&1 && sudo docker info >/dev/null 2>&1; then
-                echo "Docker daemon is fully ready"
-                break
+            echo "Stopping both docker service and socket..."
+            sudo systemctl stop docker.service || true
+            sudo systemctl stop docker.socket || true
+            sleep 2
+
+            echo "Starting docker socket and service..."
+            sudo systemctl start docker.socket
+            sudo systemctl start docker
+            sleep 3
+
+            echo "Fixing docker group permissions..."
+            sudo usermod -aG docker $USER
+            newgrp docker || true
+
+            # Wait for Docker daemon to be fully ready
+            echo "Waiting for Docker daemon to be fully operational..."
+            for i in {1..90}; do
+              if sudo docker ps >/dev/null 2>&1 && \
+                 sudo docker info >/dev/null 2>&1 && \
+                 [ -S /var/run/docker.sock ]; then
+                # Test actual connectivity
+                if sudo timeout 5 docker exec -i $(sudo docker ps -q 2>/dev/null | head -1) true 2>/dev/null || \
+                   sudo timeout 5 docker ps -q >/dev/null 2>&1; then
+                  echo "Docker daemon is fully operational"
+                  break
+                fi
               fi
-              echo "Waiting for Docker daemon... ($i/60)"
+              echo "Waiting... ($i/90)"
               sleep 1
             done
-            
-            # Additional check - verify docker socket is accessible
-            sudo timeout 10 docker pull hello-world:latest >/dev/null 2>&1 && docker rmi hello-world:latest 2>/dev/null || true
 
             if ! sudo docker compose version >/dev/null 2>&1; then
               echo "Docker Compose plugin not found. Installing Compose plugin..."
@@ -167,9 +182,6 @@ jobs:
 
             echo "Docker version: $(sudo docker --version)"
             echo "Docker Compose version: $(sudo docker compose version)"
-
-            # Extra wait for socket to be fully operational
-            sleep 5
 
             echo "Pulling latest Docker images..."
             sudo docker compose -f docker-compose.yml pull
@@ -210,26 +222,46 @@ jobs:
             
             echo "Running fallback deployment strategy..."
             
-            # Start fresh - completely stop docker
-            sudo systemctl stop docker || true
-            sleep 3
-            sudo systemctl start docker
+            # Aggressive restart - kill all docker processes
+            echo "Killing all docker processes..."
+            sudo killall -9 dockerd docker || true
+            sleep 2
             
-            # More aggressive wait with service check
+            # Stop socket and service
+            echo "Stopping docker socket and service..."
+            sudo systemctl stop docker.service || true
+            sudo systemctl stop docker.socket || true
+            sleep 3
+            
+            # Remove potentially corrupted socket
+            sudo rm -f /var/run/docker.sock /var/run/docker.sock.lock 2>/dev/null || true
+            
+            # Restart properly
+            echo "Restarting docker infrastructure..."
+            sudo systemctl start docker.socket
+            sleep 2
+            sudo systemctl start docker
+            sleep 3
+            
+            # Fix permissions
+            echo "Fixing permissions..."
+            sudo usermod -aG docker $USER || true
+            
+            # Extended wait with better checks
             echo "Waiting for Docker daemon to be fully operational..."
-            for i in {1..45}; do
+            for i in {1..120}; do
               if sudo systemctl is-active --quiet docker && \
-                 sudo docker ps >/dev/null 2>&1 && \
-                 sudo docker run --rm alpine echo "Docker is ready" >/dev/null 2>&1; then
+                 [ -S /var/run/docker.sock ] && \
+                 sudo docker ps >/dev/null 2>&1; then
                 echo "Docker is fully operational"
                 break
               fi
-              echo "Waiting... ($i/45)"
-              sleep 2
+              echo "Waiting... ($i/120)"
+              sleep 1
             done
             
-            # Wait additional time before pulling
-            sleep 10
+            echo "Final Docker status check..."
+            sudo docker version
             
             echo "Attempting image pull..."
             sudo docker compose -f docker-compose.yml pull
