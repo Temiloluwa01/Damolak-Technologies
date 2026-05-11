@@ -8,14 +8,6 @@ resource "aws_instance" "ec2" {
 
   vpc_security_group_ids = var.security_group_ids
 
-  user_data = <<-EOF
-              #!/bin/bash
-              apt update -y
-              apt install docker.io docker-compose -y
-              usermod -aG docker ubuntu
-              cd /home/ec2.user
-              EOF
-
   tags = merge(
     {
       Name = var.config.ec2[0].name
