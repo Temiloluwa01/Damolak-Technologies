@@ -109,10 +109,10 @@ The pipeline securely connects to the EC2 instance.
 -  Deploy Updated Containers
 
 ## Assumptions Made
-AWS credentials are properly configured
-Docker is installed on the EC2 instance
-Required ports are open in security groups
-GitHub Secrets are configured before pipeline execution
+- AWS credentials are properly configured
+-  Docker is installed on the EC2 instance
+-  Required ports are open in security groups
+-  GitHub Secrets are configured before pipeline execution
 
 
 ## Deployment Steps
