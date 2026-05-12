@@ -23,17 +23,17 @@ High-Level Architecture
 
 
 ## Technologies Used
-AWS
-Terraform
-GitHub Actions
-Docker
-Docker Compose
-Node.js for backend
-React for Frontend
-MongoDB for Database
-Docker Hub
-Compute	AWS EC2
-Version Control	Git & GitHub
+- AWS
+- Terraform
+- GitHub Actions
+- Docker
+- Docker Compose
+- Node.js for backend
+- React for Frontend
+- MongoDB for Database
+- Docker Hub
+- Compute AWS EC2
+- Version Control	Git & GitHub
 
 
 ## Infrastructure as Code (Terraform)
@@ -49,28 +49,28 @@ Instead of placing all resources in a single configuration file, infrastructure 
 ## Terraform Modules
 ### VPC Module
 Responsible for:
-VPC creation
-Internet gateway
-Route tables
+- VPC creation
+- Internet gateway
+- Route tables
 
 ### Subnet Module
 Responsible for:
-Subnet configuration
+- Subnet configuration
 
 ### Security Group Module
 Responsible for:
-EC2 inbound/outbound rules
-Port exposure for:
-SSH (22)
-HTTP (80)
-Application traffic
+- EC2 inbound/outbound rules
+- Port exposure for:
+   - SSH (22)
+   - HTTP (80)
+   - Application traffic
 
 ### EC2 Module
 Responsible for:
-EC2 provisioning
-AMI selection
-Instance configuration
-Security group attachment
+- EC2 provisioning
+- AMI selection
+- Instance configuration
+- Security group attachment
 
 
 ## Design Decisions
@@ -150,11 +150,11 @@ cd <project-directory>
    ```
 -  Configure GitHub Secrets
 Required secrets:
-DOCKER_USERNAME
-DOCKER_PASSWORD
-EC2_HOST
-EC2_USERNAME
-EC2_SSH_KEY
+  - DOCKER_USERNAME
+  - DOCKER_PASSWORD
+  - EC2_HOST
+  - EC2_USERNAME
+  - EC2_SSH_KEY
 -  Push Code
 Pushing to the configured branch automatically triggers deployment.
 
