@@ -18,6 +18,8 @@ The goal of this project was not just to deploy an application, but to design an
 ## Project Architecture
 High-Level Architecture
 
+![alt text](<Architectural Diagram.jpg>)
+
 
 
 ## Technologies Used
@@ -78,7 +80,9 @@ For this project i made use of EC2 Instead of ECS/EKS. EC2 was selected because:
 - it still demonstrates automation, provisioning, and deployment skills
 The architecture can later evolve into ECS or Kubernetes.
 
-GitHub Actions was also used to automate the deployment workflow intead of jenkins because it offers much more flexibility than jenkins and it integrates seamlsess with the cloud. 
+I used GitHub Actions for the CI/CD implementation because of its native integration with GitHub repositories, simplified workflow management, and reduced operational overhead compared to maintaining a self-hosted Jenkins server.
+
+This allowed the pipeline to remain lightweight, easier to maintain, and faster to implement. 
 Pipeline Workflow
 The pipeline performs the following steps automatically:
 -  Checkout Source Code
@@ -129,7 +133,7 @@ automation, infrastructure reproducibility, maintainability, deployment consiste
 ![Architecture Diagram](./docs/architecture.png)
 
 
-- 
+
 
 
 
