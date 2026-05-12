@@ -74,12 +74,24 @@ Security group attachment
 
 
 ## Design Decisions
-For this project i made use of EC2 Instead of ECS/EKS. EC2 was selected because:
-- it provides simpler infrastructure for this assessment
-- it allowed faster implementation within the time window
-- it still demonstrates automation, provisioning, and deployment skills
-The architecture can later evolve into ECS or Kubernetes.
+### EC2 Instance
+For this project i made use of EC2 Instead of ECS/EKS because the application architecture for this implementation consisted of a relatively lightweight three-tier containerized application (frontend, backend, and database) with predictable workload requirements and limited orchestration complexity.
+Given the scale and operational requirements of the system, EC2 was selected as the deployment platform because it provided:
+- Full control over the host environment
+- Simplified container deployment using Docker Compose
+- Reduced orchestration overhead
+- Easier infrastructure debugging and troubleshooting
+- Straightforward CI/CD integration
 
+Since the application did not require advanced orchestration capabilities such as:
+- dynamic container scheduling
+- service discovery
+- horizontal pod autoscaling
+- multi-node cluster management
+introducing ECS or Kubernetes (EKS) would have added unnecessary architectural complexity for the scope of the workload.
+Docker Compose on EC2 was therefore considered the most appropriate tool to use. 
+
+### Githubs Actions for CI/CD
 I used GitHub Actions for the CI/CD implementation because of its native integration with GitHub repositories, simplified workflow management, and reduced operational overhead compared to maintaining a self-hosted Jenkins server.
 
 This allowed the pipeline to remain lightweight, easier to maintain, and faster to implement. 
@@ -130,7 +142,6 @@ The primary focus of the solution was:
 
 automation, infrastructure reproducibility, maintainability, deployment consistency
 
-![Architecture Diagram](./docs/architecture.png)
 
 
 
