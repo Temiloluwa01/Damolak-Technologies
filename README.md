@@ -149,7 +149,6 @@ cd <project-directory>
    terraform apply
    ```
 -  Configure GitHub Secrets
-Required secrets:
   - DOCKER_USERNAME
   - DOCKER_PASSWORD
   - EC2_HOST
