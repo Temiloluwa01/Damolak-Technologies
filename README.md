@@ -120,11 +120,34 @@ The pipeline securely connects to the EC2 instance.
 git clone <repository-url>
 cd <project-directory>
 -  Provision Infrastructure
-cd terraform
 
-terraform init
-terraform plan
-terraform apply
+```sh
+   cd Infrastructure/Caller
+   ```
+
+```sh
+   terraform init
+   ```
+
+```sh
+   terraform init
+   ```
+
+```sh
+   terraform fmt
+   ```
+
+```sh
+   terraform validate
+   ```
+
+```sh
+   terraform plan
+   ```
+
+```sh
+   terraform apply
+   ```
 -  Configure GitHub Secrets
 Required secrets:
 DOCKER_USERNAME
